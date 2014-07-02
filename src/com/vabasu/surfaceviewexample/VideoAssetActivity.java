@@ -10,20 +10,20 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.Surface;
 import android.view.TextureView;
+import android.view.View;
+import android.widget.Button;
 
 public class VideoAssetActivity extends Activity implements
 		TextureView.SurfaceTextureListener {
 
-	// Log tag.
 	private static final String TAG = VideoAssetActivity.class.getName();
 
-	// Asset video file name.
-	private static final String FILE_NAME = "big_buck_bunny.mp4";
-	
-	private static final String FILE_URL = "http://www.w3schools.com/html/mov_bbb.mp4";
+	private static final String FILE_URL = "http://clips.vorwaerts-gmbh.de/big_buck_bunny.mp4";
 
-	// MediaPlayer instance to control playback of video file.
 	private MediaPlayer mMediaPlayer;
+
+	boolean isPlaying = false;
+	private Button playPause;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -34,51 +34,74 @@ public class VideoAssetActivity extends Activity implements
 	}
 
 	private void initView() {
-	    TextureView textureView = (TextureView) findViewById(R.id.textureView);
-	    textureView.setSurfaceTextureListener(this);
+
+		TextureView textureView = (TextureView) findViewById(R.id.textureView);
+		textureView.setSurfaceTextureListener(this);
+
+		playPause = (Button) findViewById(R.id.play_video);
+
+		playPause.setOnClickListener(new View.OnClickListener() {
+			public void onClick(View view) {
+				if (isPlaying) {
+					mMediaPlayer.pause();
+					playPause.setText("Play");
+				} else {
+					mMediaPlayer.start();
+					playPause.setText("Pause");
+				}
+				isPlaying = !isPlaying;
+			}
+		});
+		
 	}
 
 	@Override
 	protected void onDestroy() {
-	    super.onDestroy();
-	    if (mMediaPlayer != null) {
-	        mMediaPlayer.stop();
-	        mMediaPlayer.release();
-	        mMediaPlayer = null;
-	    }
+		super.onDestroy();
+		if (mMediaPlayer != null) {
+			mMediaPlayer.stop();
+			mMediaPlayer.release();
+			mMediaPlayer = null;
+		}
 	}
 
 	@Override
-	public void onSurfaceTextureAvailable(SurfaceTexture surfaceTexture, int i, int i2) {
-	    Surface surface = new Surface(surfaceTexture);
+	public void onSurfaceTextureAvailable(SurfaceTexture surfaceTexture, int i,
+			int i2) {
+		Surface surface = new Surface(surfaceTexture);
 
-	    try {
-	        //AssetFileDescriptor afd = getAssets().openFd(FILE_NAME);
-	        mMediaPlayer = new MediaPlayer();
-	        //mMediaPlayer.setDataSource(afd.getFileDescriptor(), afd.getStartOffset(), afd.getLength());
-	        
-	        mMediaPlayer.setDataSource(getApplicationContext(), Uri.parse(FILE_URL));
-	        mMediaPlayer.setSurface(surface);
-	        mMediaPlayer.setLooping(true);
-	        mMediaPlayer.prepareAsync();
+		try {
+			// AssetFileDescriptor afd = getAssets().openFd(FILE_NAME);
+			mMediaPlayer = new MediaPlayer();
+			// mMediaPlayer.setDataSource(afd.getFileDescriptor(),
+			// afd.getStartOffset(), afd.getLength());
 
-	        // Play video when the media source is ready for playback.
-	        mMediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
-	            @Override
-	            public void onPrepared(MediaPlayer mediaPlayer) {
-	                mediaPlayer.start();
-	            }
-	        });
+			mMediaPlayer.setDataSource(getApplicationContext(),
+					Uri.parse(FILE_URL));
+			mMediaPlayer.setSurface(surface);
+			mMediaPlayer.setLooping(true);
+			mMediaPlayer.prepareAsync();
 
-	    } catch (IllegalArgumentException e) {
-	        Log.d(TAG, e.getMessage());
-	    } catch (SecurityException e) {
-	        Log.d(TAG, e.getMessage());
-	    } catch (IllegalStateException e) {
-	        Log.d(TAG, e.getMessage());
-	    } catch (IOException e) {
-	        Log.d(TAG, e.getMessage());
-	    }
+			// Play video when the media source is ready for playback.
+			mMediaPlayer
+					.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+						@Override
+						public void onPrepared(MediaPlayer mediaPlayer) {
+							isPlaying = true;
+							mediaPlayer.start();
+							playPause.setVisibility(View.VISIBLE);
+						}
+					});
+
+		} catch (IllegalArgumentException e) {
+			Log.d(TAG, e.getMessage());
+		} catch (SecurityException e) {
+			Log.d(TAG, e.getMessage());
+		} catch (IllegalStateException e) {
+			Log.d(TAG, e.getMessage());
+		} catch (IOException e) {
+			Log.d(TAG, e.getMessage());
+		}
 	}
 
 	@Override
