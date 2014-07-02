@@ -12,6 +12,7 @@ import android.view.Surface;
 import android.view.TextureView;
 import android.view.View;
 import android.widget.Button;
+import android.widget.RelativeLayout;
 
 public class VideoAssetActivity extends Activity implements
 		TextureView.SurfaceTextureListener {
@@ -24,6 +25,9 @@ public class VideoAssetActivity extends Activity implements
 
 	boolean isPlaying = false;
 	private Button playPause;
+	private Button restart;
+	
+	private RelativeLayout videoControlButtons;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -39,6 +43,8 @@ public class VideoAssetActivity extends Activity implements
 		textureView.setSurfaceTextureListener(this);
 
 		playPause = (Button) findViewById(R.id.play_video);
+		restart = (Button) findViewById(R.id.restart_video);
+		videoControlButtons = (RelativeLayout) findViewById(R.id.video_control_buttons);
 
 		playPause.setOnClickListener(new View.OnClickListener() {
 			public void onClick(View view) {
@@ -52,7 +58,17 @@ public class VideoAssetActivity extends Activity implements
 				isPlaying = !isPlaying;
 			}
 		});
-		
+
+		restart.setOnClickListener(new View.OnClickListener() {
+
+			@Override
+			public void onClick(View v) {
+				mMediaPlayer.pause();
+				mMediaPlayer.seekTo(0);
+				mMediaPlayer.start();
+			}
+		});
+
 	}
 
 	@Override
@@ -71,25 +87,19 @@ public class VideoAssetActivity extends Activity implements
 		Surface surface = new Surface(surfaceTexture);
 
 		try {
-			// AssetFileDescriptor afd = getAssets().openFd(FILE_NAME);
 			mMediaPlayer = new MediaPlayer();
-			// mMediaPlayer.setDataSource(afd.getFileDescriptor(),
-			// afd.getStartOffset(), afd.getLength());
-
 			mMediaPlayer.setDataSource(getApplicationContext(),
 					Uri.parse(FILE_URL));
 			mMediaPlayer.setSurface(surface);
 			mMediaPlayer.setLooping(true);
 			mMediaPlayer.prepareAsync();
-
-			// Play video when the media source is ready for playback.
 			mMediaPlayer
 					.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
 						@Override
 						public void onPrepared(MediaPlayer mediaPlayer) {
 							isPlaying = true;
 							mediaPlayer.start();
-							playPause.setVisibility(View.VISIBLE);
+							videoControlButtons.setVisibility(View.VISIBLE);
 						}
 					});
 
